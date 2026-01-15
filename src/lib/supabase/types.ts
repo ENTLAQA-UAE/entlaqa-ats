@@ -817,6 +817,201 @@ export type Database = {
         }
         Relationships: []
       }
+      audit_logs: {
+        Row: {
+          id: string
+          user_id: string | null
+          org_id: string | null
+          action: string
+          entity_type: string
+          entity_id: string | null
+          old_values: Json | null
+          new_values: Json | null
+          ip_address: string | null
+          user_agent: string | null
+          metadata: Json | null
+          created_at: string | null
+        }
+        Insert: {
+          id?: string
+          user_id?: string | null
+          org_id?: string | null
+          action: string
+          entity_type: string
+          entity_id?: string | null
+          old_values?: Json | null
+          new_values?: Json | null
+          ip_address?: string | null
+          user_agent?: string | null
+          metadata?: Json | null
+          created_at?: string | null
+        }
+        Update: {
+          id?: string
+          user_id?: string | null
+          org_id?: string | null
+          action?: string
+          entity_type?: string
+          entity_id?: string | null
+          old_values?: Json | null
+          new_values?: Json | null
+          ip_address?: string | null
+          user_agent?: string | null
+          metadata?: Json | null
+          created_at?: string | null
+        }
+        Relationships: []
+      }
+      platform_settings: {
+        Row: {
+          id: string
+          key: string
+          value: Json
+          description: string | null
+          category: string | null
+          is_public: boolean | null
+          updated_by: string | null
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          key: string
+          value: Json
+          description?: string | null
+          category?: string | null
+          is_public?: boolean | null
+          updated_by?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          key?: string
+          value?: Json
+          description?: string | null
+          category?: string | null
+          is_public?: boolean | null
+          updated_by?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      email_templates: {
+        Row: {
+          id: string
+          org_id: string | null
+          name: string
+          slug: string
+          subject: string
+          subject_ar: string | null
+          body_html: string
+          body_html_ar: string | null
+          body_text: string | null
+          body_text_ar: string | null
+          variables: Json | null
+          category: string | null
+          is_system: boolean | null
+          is_active: boolean | null
+          created_by: string | null
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          org_id?: string | null
+          name: string
+          slug: string
+          subject: string
+          subject_ar?: string | null
+          body_html: string
+          body_html_ar?: string | null
+          body_text?: string | null
+          body_text_ar?: string | null
+          variables?: Json | null
+          category?: string | null
+          is_system?: boolean | null
+          is_active?: boolean | null
+          created_by?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          org_id?: string | null
+          name?: string
+          slug?: string
+          subject?: string
+          subject_ar?: string | null
+          body_html?: string
+          body_html_ar?: string | null
+          body_text?: string | null
+          body_text_ar?: string | null
+          variables?: Json | null
+          category?: string | null
+          is_system?: boolean | null
+          is_active?: boolean | null
+          created_by?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      platform_analytics_snapshots: {
+        Row: {
+          id: string
+          snapshot_date: string
+          total_organizations: number | null
+          active_organizations: number | null
+          trial_organizations: number | null
+          total_users: number | null
+          total_jobs: number | null
+          total_candidates: number | null
+          total_applications: number | null
+          mrr: number | null
+          arr: number | null
+          new_organizations: number | null
+          churned_organizations: number | null
+          metadata: Json | null
+          created_at: string | null
+        }
+        Insert: {
+          id?: string
+          snapshot_date: string
+          total_organizations?: number | null
+          active_organizations?: number | null
+          trial_organizations?: number | null
+          total_users?: number | null
+          total_jobs?: number | null
+          total_candidates?: number | null
+          total_applications?: number | null
+          mrr?: number | null
+          arr?: number | null
+          new_organizations?: number | null
+          churned_organizations?: number | null
+          metadata?: Json | null
+          created_at?: string | null
+        }
+        Update: {
+          id?: string
+          snapshot_date?: string
+          total_organizations?: number | null
+          active_organizations?: number | null
+          trial_organizations?: number | null
+          total_users?: number | null
+          total_jobs?: number | null
+          total_candidates?: number | null
+          total_applications?: number | null
+          mrr?: number | null
+          arr?: number | null
+          new_organizations?: number | null
+          churned_organizations?: number | null
+          metadata?: Json | null
+          created_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

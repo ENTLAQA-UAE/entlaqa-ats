@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -19,53 +20,95 @@ import {
   Globe,
   Shield,
   Bell,
-  Palette,
   Database,
   Mail,
   Key,
   Languages,
   Save,
   RefreshCw,
+  CheckCircle,
 } from "lucide-react"
 import { toast } from "sonner"
+import { Json } from "@/lib/supabase/types"
 
-export function SettingsClient() {
+interface SettingRecord {
+  id: string
+  key: string
+  value: Json
+  description: string | null
+  category: string | null
+  is_public: boolean | null
+  updated_by: string | null
+  created_at: string | null
+  updated_at: string | null
+}
+
+interface SettingsClientProps {
+  initialSettings: Record<string, any>
+  settingsRecords: SettingRecord[]
+}
+
+export function SettingsClient({ initialSettings, settingsRecords }: SettingsClientProps) {
   const [isLoading, setIsLoading] = useState(false)
+  const [isSaved, setIsSaved] = useState(false)
   const [settings, setSettings] = useState({
     // General
-    appName: "Jadarat ATS",
-    appNameAr: "جدارات",
-    supportEmail: "support@jadarat.io",
-    defaultLanguage: "en",
-    timezone: "Asia/Riyadh",
+    app_name: initialSettings.app_name || "Jadarat ATS",
+    app_name_ar: initialSettings.app_name_ar || "جدارات",
+    support_email: initialSettings.support_email || "support@jadarat.io",
+    default_language: initialSettings.default_language || "en",
+    default_timezone: initialSettings.default_timezone || "Asia/Riyadh",
 
     // Security
-    sessionTimeout: 30,
-    maxLoginAttempts: 5,
-    enforceStrongPassword: true,
-    require2FA: false,
+    session_timeout_minutes: initialSettings.session_timeout_minutes || 30,
+    max_login_attempts: initialSettings.max_login_attempts || 5,
+    enforce_strong_password: initialSettings.enforce_strong_password ?? true,
+    require_2fa_admins: initialSettings.require_2fa_admins ?? false,
 
     // Notifications
-    emailNotifications: true,
-    slackIntegration: false,
-    webhookUrl: "",
+    email_notifications_enabled: initialSettings.email_notifications_enabled ?? true,
 
     // AI Settings
-    aiProvider: "openai",
-    enableAutoScoring: true,
-    enableResumeParser: true,
+    ai_provider: initialSettings.ai_provider || "openai",
+    ai_resume_parsing_enabled: initialSettings.ai_resume_parsing_enabled ?? true,
+    ai_candidate_scoring_enabled: initialSettings.ai_candidate_scoring_enabled ?? true,
+
+    // System
+    maintenance_mode: initialSettings.maintenance_mode ?? false,
   })
 
   const handleSave = async () => {
     setIsLoading(true)
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000))
-    setIsLoading(false)
-    toast.success("Settings saved successfully")
+    const supabase = createClient()
+
+    try {
+      // Update each setting
+      const updates = Object.entries(settings).map(async ([key, value]) => {
+        const { error } = await supabase
+          .from("platform_settings")
+          .update({ value: JSON.stringify(value) })
+          .eq("key", key)
+
+        if (error) throw error
+      })
+
+      await Promise.all(updates)
+
+      setIsSaved(true)
+      toast.success("Settings saved successfully")
+
+      setTimeout(() => setIsSaved(false), 3000)
+    } catch (error) {
+      console.error("Error saving settings:", error)
+      toast.error("Failed to save settings")
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const updateSetting = (key: string, value: any) => {
     setSettings((prev) => ({ ...prev, [key]: value }))
+    setIsSaved(false)
   }
 
   return (
@@ -81,10 +124,12 @@ export function SettingsClient() {
         <Button onClick={handleSave} disabled={isLoading}>
           {isLoading ? (
             <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+          ) : isSaved ? (
+            <CheckCircle className="mr-2 h-4 w-4" />
           ) : (
             <Save className="mr-2 h-4 w-4" />
           )}
-          Save Changes
+          {isSaved ? "Saved" : "Save Changes"}
         </Button>
       </div>
 
@@ -101,31 +146,31 @@ export function SettingsClient() {
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="appName">App Name (English)</Label>
+                <Label htmlFor="app_name">App Name (English)</Label>
                 <Input
-                  id="appName"
-                  value={settings.appName}
-                  onChange={(e) => updateSetting("appName", e.target.value)}
+                  id="app_name"
+                  value={settings.app_name}
+                  onChange={(e) => updateSetting("app_name", e.target.value)}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="appNameAr">App Name (Arabic)</Label>
+                <Label htmlFor="app_name_ar">App Name (Arabic)</Label>
                 <Input
-                  id="appNameAr"
-                  value={settings.appNameAr}
-                  onChange={(e) => updateSetting("appNameAr", e.target.value)}
+                  id="app_name_ar"
+                  value={settings.app_name_ar}
+                  onChange={(e) => updateSetting("app_name_ar", e.target.value)}
                   dir="rtl"
                 />
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="supportEmail">Support Email</Label>
+              <Label htmlFor="support_email">Support Email</Label>
               <Input
-                id="supportEmail"
+                id="support_email"
                 type="email"
-                value={settings.supportEmail}
-                onChange={(e) => updateSetting("supportEmail", e.target.value)}
+                value={settings.support_email}
+                onChange={(e) => updateSetting("support_email", e.target.value)}
               />
             </div>
 
@@ -133,8 +178,8 @@ export function SettingsClient() {
               <div className="space-y-2">
                 <Label>Default Language</Label>
                 <Select
-                  value={settings.defaultLanguage}
-                  onValueChange={(value) => updateSetting("defaultLanguage", value)}
+                  value={settings.default_language}
+                  onValueChange={(value) => updateSetting("default_language", value)}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -148,8 +193,8 @@ export function SettingsClient() {
               <div className="space-y-2">
                 <Label>Timezone</Label>
                 <Select
-                  value={settings.timezone}
-                  onValueChange={(value) => updateSetting("timezone", value)}
+                  value={settings.default_timezone}
+                  onValueChange={(value) => updateSetting("default_timezone", value)}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -178,24 +223,24 @@ export function SettingsClient() {
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="sessionTimeout">Session Timeout (minutes)</Label>
+                <Label htmlFor="session_timeout">Session Timeout (minutes)</Label>
                 <Input
-                  id="sessionTimeout"
+                  id="session_timeout"
                   type="number"
-                  value={settings.sessionTimeout}
+                  value={settings.session_timeout_minutes}
                   onChange={(e) =>
-                    updateSetting("sessionTimeout", parseInt(e.target.value) || 30)
+                    updateSetting("session_timeout_minutes", parseInt(e.target.value) || 30)
                   }
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="maxLoginAttempts">Max Login Attempts</Label>
+                <Label htmlFor="max_login_attempts">Max Login Attempts</Label>
                 <Input
-                  id="maxLoginAttempts"
+                  id="max_login_attempts"
                   type="number"
-                  value={settings.maxLoginAttempts}
+                  value={settings.max_login_attempts}
                   onChange={(e) =>
-                    updateSetting("maxLoginAttempts", parseInt(e.target.value) || 5)
+                    updateSetting("max_login_attempts", parseInt(e.target.value) || 5)
                   }
                 />
               </div>
@@ -207,14 +252,14 @@ export function SettingsClient() {
               <ToggleOption
                 label="Enforce Strong Passwords"
                 description="Require complex passwords for all users"
-                enabled={settings.enforceStrongPassword}
-                onChange={(enabled) => updateSetting("enforceStrongPassword", enabled)}
+                enabled={settings.enforce_strong_password}
+                onChange={(enabled) => updateSetting("enforce_strong_password", enabled)}
               />
               <ToggleOption
                 label="Require Two-Factor Authentication"
                 description="Enforce 2FA for all admin accounts"
-                enabled={settings.require2FA}
-                onChange={(enabled) => updateSetting("require2FA", enabled)}
+                enabled={settings.require_2fa_admins}
+                onChange={(enabled) => updateSetting("require_2fa_admins", enabled)}
               />
             </div>
           </CardContent>
@@ -275,8 +320,8 @@ export function SettingsClient() {
             <div className="space-y-2">
               <Label>AI Provider</Label>
               <Select
-                value={settings.aiProvider}
-                onValueChange={(value) => updateSetting("aiProvider", value)}
+                value={settings.ai_provider}
+                onValueChange={(value) => updateSetting("ai_provider", value)}
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -295,14 +340,14 @@ export function SettingsClient() {
               <ToggleOption
                 label="AI Resume Parsing"
                 description="Automatically extract data from uploaded resumes"
-                enabled={settings.enableResumeParser}
-                onChange={(enabled) => updateSetting("enableResumeParser", enabled)}
+                enabled={settings.ai_resume_parsing_enabled}
+                onChange={(enabled) => updateSetting("ai_resume_parsing_enabled", enabled)}
               />
               <ToggleOption
                 label="AI Candidate Scoring"
                 description="Automatically score candidates based on job requirements"
-                enabled={settings.enableAutoScoring}
-                onChange={(enabled) => updateSetting("enableAutoScoring", enabled)}
+                enabled={settings.ai_candidate_scoring_enabled}
+                onChange={(enabled) => updateSetting("ai_candidate_scoring_enabled", enabled)}
               />
             </div>
           </CardContent>
@@ -315,49 +360,37 @@ export function SettingsClient() {
               <Bell className="h-5 w-5" />
               <CardTitle>Notifications</CardTitle>
             </div>
-            <CardDescription>Email and integration settings</CardDescription>
+            <CardDescription>Email and notification settings</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <ToggleOption
               label="Email Notifications"
-              description="Send system alerts via email"
-              enabled={settings.emailNotifications}
-              onChange={(enabled) => updateSetting("emailNotifications", enabled)}
+              description="Send system alerts and updates via email"
+              enabled={settings.email_notifications_enabled}
+              onChange={(enabled) => updateSetting("email_notifications_enabled", enabled)}
             />
-            <ToggleOption
-              label="Slack Integration"
-              description="Send notifications to Slack channels"
-              enabled={settings.slackIntegration}
-              onChange={(enabled) => updateSetting("slackIntegration", enabled)}
-            />
-
-            <Separator />
-
-            <div className="space-y-2">
-              <Label htmlFor="webhookUrl">Webhook URL (Optional)</Label>
-              <Input
-                id="webhookUrl"
-                placeholder="https://your-webhook.com/notify"
-                value={settings.webhookUrl}
-                onChange={(e) => updateSetting("webhookUrl", e.target.value)}
-              />
-              <p className="text-xs text-muted-foreground">
-                Receive real-time notifications via webhook
-              </p>
-            </div>
           </CardContent>
         </Card>
 
-        {/* API & Integrations */}
+        {/* System Settings */}
         <Card>
           <CardHeader>
             <div className="flex items-center gap-2">
               <Key className="h-5 w-5" />
-              <CardTitle>API & Integrations</CardTitle>
+              <CardTitle>System</CardTitle>
             </div>
-            <CardDescription>External service connections</CardDescription>
+            <CardDescription>System-wide configuration</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
+            <ToggleOption
+              label="Maintenance Mode"
+              description="Put the platform in maintenance mode (only admins can access)"
+              enabled={settings.maintenance_mode}
+              onChange={(enabled) => updateSetting("maintenance_mode", enabled)}
+            />
+
+            <Separator />
+
             <div className="space-y-3">
               <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                 <div className="flex items-center gap-3">
@@ -375,7 +408,7 @@ export function SettingsClient() {
                   <Database className="h-5 w-5 text-muted-foreground" />
                   <div>
                     <p className="font-medium">Database</p>
-                    <p className="text-sm text-muted-foreground">Supabase</p>
+                    <p className="text-sm text-muted-foreground">Supabase PostgreSQL</p>
                   </div>
                 </div>
                 <Badge variant="default">Connected</Badge>
