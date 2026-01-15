@@ -1,5 +1,7 @@
-import { Bell, Search, User } from 'lucide-react';
+import { Bell, Search, User, LogOut } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -20,6 +22,21 @@ interface HeaderProps {
 
 export function Header({ title, titleAr }: HeaderProps) {
   const { t, direction } = useLanguage();
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    await signOut();
+    navigate('/login');
+  };
+
+  const userEmail = user?.email || 'user@jadarat.com';
+  const userInitials = user?.user_metadata?.first_name 
+    ? `${user.user_metadata.first_name[0]}${user.user_metadata.last_name?.[0] || ''}`.toUpperCase()
+    : userEmail.substring(0, 2).toUpperCase();
+  const displayName = user?.user_metadata?.first_name 
+    ? `${user.user_metadata.first_name} ${user.user_metadata.last_name || ''}`
+    : t('User', 'مستخدم');
 
   return (
     <header className="h-16 bg-card border-b border-border px-6 flex items-center justify-between">
@@ -88,12 +105,12 @@ export function Header({ title, titleAr }: HeaderProps) {
               <Avatar className="w-8 h-8">
                 <AvatarImage src="" />
                 <AvatarFallback className="bg-accent text-accent-foreground text-sm">
-                  SA
+                  {userInitials}
                 </AvatarFallback>
               </Avatar>
               <div className="hidden md:block text-start">
-                <p className="text-sm font-medium">{t('Super Admin', 'المدير العام')}</p>
-                <p className="text-xs text-muted-foreground">admin@jadarat.com</p>
+                <p className="text-sm font-medium">{displayName}</p>
+                <p className="text-xs text-muted-foreground">{userEmail}</p>
               </div>
             </Button>
           </DropdownMenuTrigger>
@@ -104,7 +121,8 @@ export function Header({ title, titleAr }: HeaderProps) {
               <User className="w-4 h-4 ltr:mr-2 rtl:ml-2" />
               {t('Profile', 'الملف الشخصي')}
             </DropdownMenuItem>
-            <DropdownMenuItem className="text-destructive">
+            <DropdownMenuItem onClick={handleLogout} className="text-destructive">
+              <LogOut className="w-4 h-4 ltr:mr-2 rtl:ml-2" />
               {t('Logout', 'تسجيل الخروج')}
             </DropdownMenuItem>
           </DropdownMenuContent>
