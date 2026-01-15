@@ -24,12 +24,12 @@ interface HeaderProps {
 
 export function Header({ title, titleAr }: HeaderProps) {
   const router = useRouter()
-  const supabase = createClient()
   const { language, setLanguage, t } = useI18n()
 
   const displayTitle = language === "ar" && titleAr ? titleAr : title || t.nav.dashboard
 
   const handleLogout = async () => {
+    const supabase = createClient()
     const { error } = await supabase.auth.signOut()
     if (error) {
       toast.error("Error signing out")
