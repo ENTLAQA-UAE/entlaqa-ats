@@ -16,8 +16,10 @@ import {
   BarChart3,
   FileText,
   ChevronLeft,
+  ChevronRight,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { useI18n } from "@/lib/i18n"
 
 interface SidebarProps {
   collapsed?: boolean
@@ -27,7 +29,7 @@ interface SidebarProps {
 const superAdminLinks = [
   { href: "/", label: "Dashboard", labelAr: "لوحة التحكم", icon: LayoutDashboard },
   { href: "/organizations", label: "Organizations", labelAr: "المؤسسات", icon: Building2 },
-  { href: "/tiers", label: "Subscription Tiers", labelAr: "مستويات الاشتراك", icon: Layers },
+  { href: "/tiers", label: "Subscription Tiers", labelAr: "باقات الاشتراك", icon: Layers },
   { href: "/billing", label: "Billing", labelAr: "الفواتير", icon: CreditCard },
   { href: "/settings", label: "Settings", labelAr: "الإعدادات", icon: Settings },
 ]
@@ -44,14 +46,19 @@ const orgAdminLinks = [
 
 export function Sidebar({ collapsed = false, onCollapse }: SidebarProps) {
   const pathname = usePathname()
+  const { language, isRTL } = useI18n()
 
   // TODO: Determine links based on user role
   const links = superAdminLinks
 
+  const CollapseIcon = isRTL ? ChevronRight : ChevronLeft
+  const ExpandIcon = isRTL ? ChevronLeft : ChevronRight
+
   return (
     <aside
       className={cn(
-        "flex flex-col border-r border-border bg-card transition-all duration-300",
+        "flex flex-col border-border bg-card transition-all duration-300",
+        isRTL ? "border-l" : "border-r",
         collapsed ? "w-16" : "w-64"
       )}
     >
@@ -62,7 +69,7 @@ export function Sidebar({ collapsed = false, onCollapse }: SidebarProps) {
             <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
               <Building2 className="w-4 h-4 text-primary-foreground" />
             </div>
-            <span className="font-bold text-lg">Jadarat</span>
+            <span className="font-bold text-lg">{language === "ar" ? "جدارات" : "Jadarat"}</span>
           </Link>
         )}
         {collapsed && (
@@ -77,7 +84,7 @@ export function Sidebar({ collapsed = false, onCollapse }: SidebarProps) {
             className="h-8 w-8"
             onClick={() => onCollapse(true)}
           >
-            <ChevronLeft className="h-4 w-4" />
+            <CollapseIcon className="h-4 w-4" />
           </Button>
         )}
       </div>
@@ -87,6 +94,7 @@ export function Sidebar({ collapsed = false, onCollapse }: SidebarProps) {
         <nav className="space-y-1 px-2">
           {links.map((link) => {
             const isActive = pathname === link.href
+            const label = language === "ar" ? link.labelAr : link.label
             return (
               <Link
                 key={link.href}
@@ -99,7 +107,7 @@ export function Sidebar({ collapsed = false, onCollapse }: SidebarProps) {
                 )}
               >
                 <link.icon className={cn("h-5 w-5 shrink-0")} />
-                {!collapsed && <span>{link.label}</span>}
+                {!collapsed && <span>{label}</span>}
               </Link>
             )
           })}
@@ -115,7 +123,7 @@ export function Sidebar({ collapsed = false, onCollapse }: SidebarProps) {
             className="w-full h-8"
             onClick={() => onCollapse(false)}
           >
-            <ChevronLeft className="h-4 w-4 rotate-180" />
+            <ExpandIcon className="h-4 w-4" />
           </Button>
         </div>
       )}
