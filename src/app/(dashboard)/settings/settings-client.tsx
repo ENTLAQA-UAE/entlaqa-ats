@@ -98,8 +98,7 @@ export function SettingsClient({ initialSettings, settingsRecords }: SettingsCli
       toast.success("Settings saved successfully")
 
       setTimeout(() => setIsSaved(false), 3000)
-    } catch (error) {
-      console.error("Error saving settings:", error)
+    } catch {
       toast.error("Failed to save settings")
     } finally {
       setIsLoading(false)

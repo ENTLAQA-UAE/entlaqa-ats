@@ -211,6 +211,14 @@ export function UsersClient({ initialUsers, organizations }: UsersClientProps) {
     setIsLoading(false)
   }
 
+  const sanitizeCsvValue = (value: string): string => {
+    const dangerous = ['=', '@', '+', '-']
+    if (dangerous.includes(value.charAt(0))) {
+      return `'${value}`
+    }
+    return value.replace(/"/g, '""')
+  }
+
   const exportUsers = () => {
     const csvContent = [
       ["Name", "Email", "Phone", "Organization", "Roles", "Status", "Last Login", "Created"],
@@ -225,7 +233,7 @@ export function UsersClient({ initialUsers, organizations }: UsersClientProps) {
         user.created_at ? new Date(user.created_at).toLocaleDateString() : "",
       ]),
     ]
-      .map((row) => row.map((cell) => `"${cell}"`).join(","))
+      .map((row) => row.map((cell) => `"${sanitizeCsvValue(cell)}"`).join(","))
       .join("\n")
 
     const blob = new Blob([csvContent], { type: "text/csv" })
