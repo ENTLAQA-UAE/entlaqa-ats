@@ -1,7 +1,29 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import { checkRateLimit } from '@/lib/security/rate-limit'
 
 export async function updateSession(request: NextRequest) {
+  // --- Rate limiting for auth endpoints ---
+  const authPaths = ['/login', '/signup', '/auth/callback']
+  const isAuthPath = authPaths.some(p => request.nextUrl.pathname.startsWith(p))
+
+  if (isAuthPath && (request.method === 'POST' || request.nextUrl.pathname === '/auth/callback')) {
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+      ?? request.headers.get('x-real-ip')
+      ?? 'unknown'
+    const { allowed, retryAfterMs } = checkRateLimit(`auth:${ip}`)
+
+    if (!allowed) {
+      return NextResponse.json(
+        { error: 'Too many requests. Please try again later.' },
+        {
+          status: 429,
+          headers: { 'Retry-After': String(Math.ceil(retryAfterMs / 1000)) },
+        },
+      )
+    }
+  }
+
   let supabaseResponse = NextResponse.next({
     request,
   })

@@ -70,6 +70,43 @@ describe('SignupPage', () => {
     expect(passwordInput).toHaveAttribute('minLength', '8')
   })
 
+  it('should enforce maximum input lengths', () => {
+    render(<SignupPage />)
+    expect(screen.getByLabelText('First Name')).toHaveAttribute('maxLength', '50')
+    expect(screen.getByLabelText('Last Name')).toHaveAttribute('maxLength', '50')
+    expect(screen.getByLabelText('Email')).toHaveAttribute('maxLength', '254')
+    expect(screen.getByLabelText('Password')).toHaveAttribute('maxLength', '128')
+  })
+
+  it('should reject weak passwords client-side', async () => {
+    const user = userEvent.setup()
+    render(<SignupPage />)
+
+    await user.type(screen.getByLabelText('First Name'), 'John')
+    await user.type(screen.getByLabelText('Last Name'), 'Doe')
+    await user.type(screen.getByLabelText('Email'), 'john@example.com')
+    await user.type(screen.getByLabelText('Password'), 'weakpass')
+    await user.click(screen.getByRole('button', { name: /create account/i }))
+
+    await waitFor(() => {
+      const { toast } = require('sonner')
+      expect(toast.error).toHaveBeenCalled()
+      // Should NOT call Supabase signUp because password is invalid
+      expect(mockSignUp).not.toHaveBeenCalled()
+    })
+  })
+
+  it('should show password strength indicator', async () => {
+    const user = userEvent.setup()
+    render(<SignupPage />)
+
+    await user.type(screen.getByLabelText('Password'), 'Test1@secure')
+
+    await waitFor(() => {
+      expect(screen.getByText(/strength:/i)).toBeInTheDocument()
+    })
+  })
+
   it('should allow filling in all fields', async () => {
     const user = userEvent.setup()
     render(<SignupPage />)
@@ -77,12 +114,12 @@ describe('SignupPage', () => {
     await user.type(screen.getByLabelText('First Name'), 'John')
     await user.type(screen.getByLabelText('Last Name'), 'Doe')
     await user.type(screen.getByLabelText('Email'), 'john@example.com')
-    await user.type(screen.getByLabelText('Password'), 'password123')
+    await user.type(screen.getByLabelText('Password'), 'Secure1@pass')
 
     expect(screen.getByLabelText('First Name')).toHaveValue('John')
     expect(screen.getByLabelText('Last Name')).toHaveValue('Doe')
     expect(screen.getByLabelText('Email')).toHaveValue('john@example.com')
-    expect(screen.getByLabelText('Password')).toHaveValue('password123')
+    expect(screen.getByLabelText('Password')).toHaveValue('Secure1@pass')
   })
 
   it('should call Supabase signUp with correct data', async () => {
@@ -94,13 +131,13 @@ describe('SignupPage', () => {
     await user.type(screen.getByLabelText('First Name'), 'John')
     await user.type(screen.getByLabelText('Last Name'), 'Doe')
     await user.type(screen.getByLabelText('Email'), 'john@example.com')
-    await user.type(screen.getByLabelText('Password'), 'password123')
+    await user.type(screen.getByLabelText('Password'), 'Secure1@pass')
     await user.click(screen.getByRole('button', { name: /create account/i }))
 
     await waitFor(() => {
       expect(mockSignUp).toHaveBeenCalledWith({
         email: 'john@example.com',
-        password: 'password123',
+        password: 'Secure1@pass',
         options: {
           data: {
             first_name: 'John',
@@ -120,7 +157,7 @@ describe('SignupPage', () => {
     await user.type(screen.getByLabelText('First Name'), 'John')
     await user.type(screen.getByLabelText('Last Name'), 'Doe')
     await user.type(screen.getByLabelText('Email'), 'john@example.com')
-    await user.type(screen.getByLabelText('Password'), 'password123')
+    await user.type(screen.getByLabelText('Password'), 'Secure1@pass')
     await user.click(screen.getByRole('button', { name: /create account/i }))
 
     await waitFor(() => {
@@ -140,7 +177,7 @@ describe('SignupPage', () => {
     await user.type(screen.getByLabelText('First Name'), 'John')
     await user.type(screen.getByLabelText('Last Name'), 'Doe')
     await user.type(screen.getByLabelText('Email'), 'existing@example.com')
-    await user.type(screen.getByLabelText('Password'), 'password123')
+    await user.type(screen.getByLabelText('Password'), 'Secure1@pass')
     await user.click(screen.getByRole('button', { name: /create account/i }))
 
     await waitFor(() => {
@@ -158,7 +195,7 @@ describe('SignupPage', () => {
     await user.type(screen.getByLabelText('First Name'), 'John')
     await user.type(screen.getByLabelText('Last Name'), 'Doe')
     await user.type(screen.getByLabelText('Email'), 'john@example.com')
-    await user.type(screen.getByLabelText('Password'), 'password123')
+    await user.type(screen.getByLabelText('Password'), 'Secure1@pass')
     await user.click(screen.getByRole('button', { name: /create account/i }))
 
     await waitFor(() => {
@@ -181,7 +218,7 @@ describe('SignupPage', () => {
     await user.type(screen.getByLabelText('First Name'), 'John')
     await user.type(screen.getByLabelText('Last Name'), 'Doe')
     await user.type(screen.getByLabelText('Email'), 'john@example.com')
-    await user.type(screen.getByLabelText('Password'), 'password123')
+    await user.type(screen.getByLabelText('Password'), 'Secure1@pass')
     await user.click(screen.getByRole('button', { name: /create account/i }))
 
     await waitFor(() => {

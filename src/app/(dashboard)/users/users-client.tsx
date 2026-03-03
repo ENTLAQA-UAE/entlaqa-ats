@@ -319,6 +319,7 @@ export function UsersClient({ initialUsers, organizations }: UsersClientProps) {
                   placeholder="Search by name or email..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
+                  maxLength={200}
                   className="pl-9"
                 />
               </div>

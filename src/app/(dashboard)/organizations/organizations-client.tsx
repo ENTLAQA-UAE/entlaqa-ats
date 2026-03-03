@@ -233,6 +233,7 @@ export function OrganizationsClient({
                     id="name"
                     placeholder="Saudi Bank"
                     value={newOrg.name}
+                    maxLength={200}
                     onChange={(e) =>
                       setNewOrg({ ...newOrg, name: e.target.value })
                     }
@@ -245,6 +246,7 @@ export function OrganizationsClient({
                     placeholder="البنك السعودي"
                     dir="rtl"
                     value={newOrg.name_ar}
+                    maxLength={200}
                     onChange={(e) =>
                       setNewOrg({ ...newOrg, name_ar: e.target.value })
                     }
@@ -258,6 +260,7 @@ export function OrganizationsClient({
                   type="email"
                   placeholder="admin@company.com"
                   value={newOrg.admin_email}
+                  maxLength={254}
                   onChange={(e) =>
                     setNewOrg({ ...newOrg, admin_email: e.target.value })
                   }
@@ -372,6 +375,7 @@ export function OrganizationsClient({
             placeholder="Search organizations..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
+            maxLength={200}
             className="pl-9"
           />
         </div>

@@ -149,6 +149,7 @@ export function SettingsClient({ initialSettings, settingsRecords }: SettingsCli
                 <Input
                   id="app_name"
                   value={settings.app_name}
+                  maxLength={100}
                   onChange={(e) => updateSetting("app_name", e.target.value)}
                 />
               </div>
@@ -157,6 +158,7 @@ export function SettingsClient({ initialSettings, settingsRecords }: SettingsCli
                 <Input
                   id="app_name_ar"
                   value={settings.app_name_ar}
+                  maxLength={100}
                   onChange={(e) => updateSetting("app_name_ar", e.target.value)}
                   dir="rtl"
                 />
@@ -168,6 +170,7 @@ export function SettingsClient({ initialSettings, settingsRecords }: SettingsCli
               <Input
                 id="support_email"
                 type="email"
+                maxLength={254}
                 value={settings.support_email}
                 onChange={(e) => updateSetting("support_email", e.target.value)}
               />
@@ -226,9 +229,11 @@ export function SettingsClient({ initialSettings, settingsRecords }: SettingsCli
                 <Input
                   id="session_timeout"
                   type="number"
+                  min={1}
+                  max={1440}
                   value={settings.session_timeout_minutes}
                   onChange={(e) =>
-                    updateSetting("session_timeout_minutes", parseInt(e.target.value) || 30)
+                    updateSetting("session_timeout_minutes", Math.min(1440, Math.max(1, parseInt(e.target.value) || 30)))
                   }
                 />
               </div>
@@ -237,9 +242,11 @@ export function SettingsClient({ initialSettings, settingsRecords }: SettingsCli
                 <Input
                   id="max_login_attempts"
                   type="number"
+                  min={1}
+                  max={20}
                   value={settings.max_login_attempts}
                   onChange={(e) =>
-                    updateSetting("max_login_attempts", parseInt(e.target.value) || 5)
+                    updateSetting("max_login_attempts", Math.min(20, Math.max(1, parseInt(e.target.value) || 5)))
                   }
                 />
               </div>

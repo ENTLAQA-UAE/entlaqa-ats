@@ -10,6 +10,21 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { toast } from "sonner"
 import { Loader2, Building2 } from "lucide-react"
+import { validatePassword, getPasswordStrength } from "@/lib/security/password-validation"
+
+const strengthColors = {
+  weak: "bg-red-500",
+  fair: "bg-orange-500",
+  good: "bg-yellow-500",
+  strong: "bg-green-500",
+} as const
+
+const strengthWidths = {
+  weak: "w-1/4",
+  fair: "w-2/4",
+  good: "w-3/4",
+  strong: "w-full",
+} as const
 
 export default function SignupPage() {
   const [firstName, setFirstName] = useState("")
@@ -19,8 +34,17 @@ export default function SignupPage() {
   const [loading, setLoading] = useState(false)
   const router = useRouter()
 
+  const passwordStrength = password ? getPasswordStrength(password) : null
+
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    const validation = validatePassword(password)
+    if (!validation.valid) {
+      toast.error(validation.errors[0])
+      return
+    }
+
     setLoading(true)
 
     try {
@@ -75,6 +99,7 @@ export default function SignupPage() {
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
                   required
+                  maxLength={50}
                   disabled={loading}
                 />
               </div>
@@ -86,6 +111,7 @@ export default function SignupPage() {
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
                   required
+                  maxLength={50}
                   disabled={loading}
                 />
               </div>
@@ -99,6 +125,7 @@ export default function SignupPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                maxLength={254}
                 disabled={loading}
               />
             </div>
@@ -112,8 +139,21 @@ export default function SignupPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 minLength={8}
+                maxLength={128}
                 disabled={loading}
               />
+              {password && passwordStrength && (
+                <div className="space-y-1">
+                  <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all ${strengthColors[passwordStrength]} ${strengthWidths[passwordStrength]}`}
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground capitalize">
+                    Strength: {passwordStrength}
+                  </p>
+                </div>
+              )}
             </div>
           </CardContent>
           <CardFooter className="flex flex-col gap-4">
